@@ -14,15 +14,11 @@ namespace nith
 
         NithClient();
 
-        Window &getMainWindow();
-
         bool initGLFW() const;
 
         bool initGL() const;
 
         bool openMainWindow();
-
-        static NithClient &GetClient();
 
         ShaderManager &getShaderManager()
         {
@@ -34,6 +30,16 @@ namespace nith
             return m_resourceFolderPath;
         }
 
+        NITH_INLINE Window &getMainWindow()
+        {
+            return m_mainWindow;
+        }
+
+        static NITH_INLINE NithClient &GetClient()
+        {
+            return *s_client;
+        }
+
     private:
         static NithClient *s_client;
 
@@ -43,15 +49,5 @@ namespace nith
 
         ShaderManager m_shaderManager;
     };
-
-    NITH_INLINE NithClient &NithClient::GetClient()
-    {
-        return *s_client;
-    }
-
-    NITH_INLINE Window &NithClient::getMainWindow()
-    {
-        return m_mainWindow;
-    }
 
 } // namespace nith
