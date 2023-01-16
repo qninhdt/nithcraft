@@ -1,10 +1,11 @@
 #pragma once
 
 #include "core/ecs/archetype.hpp"
+#include "core/ecs/id_stack.hpp"
 
-namespace nith
+namespace nith::ecs
 {
-    struct Hierarchy
+    struct HierarchyComponent
     {
         u32 parent;
         u32 nextSibling;
@@ -20,94 +21,145 @@ namespace nith
         }
     };
 
-    template <typename E, typename... T>
-    class HierarchicalArchetype : public Archetype<E, Hierarchy, T...>
+    namespace internal
+    {
+        struct NodeComponent
+        {
+            u32 nextIndex;
+            u32 prevIndex;
+        };
+    }
+
+    template <typename... T>
+    class HierarchicalArchetype : public Archetype<HierarchyComponent, internal::NodeComponent, T...>
     {
     public:
-        HierarchicalArchetype() = default;
+        HierarchicalArchetype() : m_firstIndex(0)
+        {
+        }
+
+        void addEntity(const entity_id &id)
+        {
+            if (m_freeIndices.empty())
+            {
+                u32 capacity = this->capacity();
+                u32 newCapacity = capacity ? capacity * 2 : 16;
+                for (u32 i = capacity + 1; i <= newCapacity; ++i)
+                    m_freeIndices.push(i);
+
+                this->reserve(newCapacity);
+            }
+
+            u32 index = m_freeIndices.top();
+            m_freeIndices.pop();
+
+            // index -> entity
+            this->m_indexToEntity[index - 1] = id;
+
+            // entity -> index
+            this->m_entityToIndex[id] = index;
+
+            this->m_base.callAttachCallback(index);
+
+            auto &node = this->template getComponentAt<internal::NodeComponent>(index);
+            if (index == 1)
+            {
+                if (m_firstIndex)
+                {
+                    auto &firstNode = this->template getComponentAt<internal::NodeComponent>(m_firstIndex);
+                    node.nextIndex = m_firstIndex;
+                    node.prevIndex = 0;
+                    firstNode.prevIndex = index;
+                }
+                m_firstIndex = index;
+            }
+            else
+            {
+                auto &prevNode = this->template getComponentAt<internal::NodeComponent>(index - 1);
+
+                if (prevNode.nextIndex)
+                {
+                    auto &nextNode = this->template getComponentAt<internal::NodeComponent>(prevNode.nextIndex);
+                    nextNode.prevIndex = index;
+                }
+
+                node.nextIndex = prevNode.nextIndex;
+                node.prevIndex = index - 1;
+                prevNode.nextIndex = index;
+            }
+        }
 
         void removeEntity(const entity_id &id)
         {
             i32 index = this->m_entityToIndex[id];
-            i32 lastIndex = this->size();
-            vector<i32> removedIndices;
+            auto &hierarchy = this->template getComponentAt<HierarchyComponent>(index);
 
-            removeEntityChildren(index, removedIndices);
-
-            std::sort(removedIndices.begin(), removedIndices.end());
-
-            i32 nRemovedIndices = removedIndices.size();
-            for (i32 i = lastIndex, j = 0; i >= lastIndex - nRemovedIndices + 1 && removedIndices[j] < i; --i)
+            if (hierarchy.parent)
             {
-                if (this->m_indexToEntity[i - 1])
+                auto &parent = this->template getComponentAt<HierarchyComponent>(hierarchy.parent);
+
+                if (parent.nextSibling)
                 {
-                    moveItem(i, removedIndices[j++]);
+                    auto &nextSibling = this->template getComponentAt<HierarchyComponent>(hierarchy.nextSibling);
+                    nextSibling.prevSibling = hierarchy.prevSibling;
+                }
+
+                if (parent.prevSibling)
+                {
+                    auto &prevSibling = this->template getComponentAt<HierarchyComponent>(hierarchy.prevSibling);
+                    prevSibling.nextSibling = hierarchy.nextSibling;
+                }
+
+                if (parent.firstChild == (u32)index)
+                {
+                    parent.firstChild = hierarchy.nextSibling;
                 }
             }
-        }
 
+            removeEntityChildren(index);
+        }
         void addChildEntity(const entity_id &parentId, const entity_id &id)
         {
-            auto &array = this->m_base.template getComponentArray<Hierarchy>();
+            assert(this->m_entityToIndex.find(parentId) != this->m_entityToIndex.end() && "đéo có");
+            auto &array = this->m_base.template getComponentArray<HierarchyComponent>();
 
             this->addEntity(id);
 
             u32 parentIndex = this->m_entityToIndex[parentId];
             u32 childIndex = this->m_entityToIndex[id];
 
-            Hierarchy &parent = array[parentIndex - 1];
-            Hierarchy &child = array[childIndex - 1];
+            auto &parent = array[parentIndex - 1];
+            auto &child = array[childIndex - 1];
 
             child.parent = parentIndex;
 
-            if (!parent.firstChild)
+            if (parent.firstChild)
             {
-                parent.firstChild = childIndex;
+                auto &firstChild = array[parent.firstChild - 1];
+                firstChild.prevSibling = childIndex;
+                child.nextSibling = parent.firstChild;
+            }
+
+            parent.firstChild = childIndex;
+        }
+
+        template <typename... C>
+        void each(auto callback)
+        {
+            u32 index = m_firstIndex;
+            while (index)
+            {
+                auto &node = this->template getComponentAt<internal::NodeComponent>(index);
+                callback(this->template getComponentAt<C>(index)...);
+                index = node.nextIndex;
             }
         }
 
     private:
-        void copyItem(const u32 &from, const u32 &to)
+        void removeEntityChildren(const u32 &index)
         {
-            this->m_base.copyComponents(from, to);
-
-            this->m_entityToIndex[this->m_indexToEntity[from - 1]] = to;
-            this->m_indexToEntity[to - 1] = this->m_indexToEntity[from - 1];
-            this->m_indexToEntity[from - 1] = 0;
-        }
-
-        u32 moveItem(const u32 &from, const u32 &to)
-        {
-            Hierarchy &child = this->template getComponentAt<Hierarchy>(from);
-
-            if (child.parent && child.parent > to)
-            {
-                Hierarchy &parent = this->template getComponentAt<Hierarchy>(child.parent);
-                if (parent.firstChild == from)
-                {
-                    parent.firstChild = child.parent;
-                }
-                u32 real = child.parent;
-                child.parent = moveItem(child.parent, to);
-                copyItem(from, real);
-
-                return real;
-            }
-            else
-            {
-                copyItem(from, to);
-
-                return to;
-            }
-        }
-
-        void removeEntityChildren(const u32 &index, vector<i32> &removedIndices)
-        {
-            Hierarchy &hierarchy = this->template getComponentAt<Hierarchy>(index);
-
-            this->m_entityToIndex.erase(this->m_indexToEntity[index - 1]);
-            this->m_indexToEntity[index - 1] = 0;
-            removedIndices.push_back(index);
+            auto &hierarchy = this->template getComponentAt<HierarchyComponent>(index);
+            auto &node = this->template getComponentAt<internal::NodeComponent>(index);
 
             if (hierarchy.firstChild)
             {
@@ -115,14 +167,43 @@ namespace nith
 
                 while (childIndex)
                 {
-                    Hierarchy &child = this->template getComponentAt<Hierarchy>(childIndex);
-
-                    removeEntityChildren(childIndex, removedIndices);
-
-                    childIndex = child.nextSibling;
+                    auto &child = this->template getComponentAt<HierarchyComponent>(childIndex);
+                    u32 nextSibling = child.nextSibling;
+                    removeEntityChildren(childIndex);
+                    childIndex = nextSibling;
                 }
             }
+
+            if (m_firstIndex == index)
+            {
+                if (node.nextIndex)
+                {
+                    auto &nextNode = this->template getComponentAt<internal::NodeComponent>(node.nextIndex);
+                    nextNode.prevIndex = 0;
+                }
+                m_firstIndex = node.nextIndex;
+            }
+            else
+            {
+                if (node.prevIndex)
+                {
+                    auto &prevNode = this->template getComponentAt<internal::NodeComponent>(node.prevIndex);
+                    prevNode.nextIndex = node.nextIndex;
+                }
+                if (node.nextIndex)
+                {
+                    auto &nextNode = this->template getComponentAt<internal::NodeComponent>(node.nextIndex);
+                    nextNode.prevIndex = node.prevIndex;
+                }
+            }
+
+            this->m_entityToIndex.erase(this->m_indexToEntity[index - 1]);
+            this->m_indexToEntity[index - 1] = 0;
+            m_freeIndices.push(index);
         }
+
+        u32 m_firstIndex;
+        std::priority_queue<u32, std::vector<u32>, std::greater<u32>> m_freeIndices;
     };
 
-} // namespace nith
+} // namespace nith::ecs

@@ -5,6 +5,7 @@
 #include "client/window.hpp"
 #include "core/const_string.hpp"
 #include "client/graphic/mesh.hpp"
+#include "core/ecs/id_stack.hpp"
 
 using BasicShader = nith::Shader<"color0", "color1", "projection">;
 
@@ -66,11 +67,10 @@ int main()
 
     struct MobComponent
     {
-        nith::u32 health;
-        bool isHungry;
+        std::string name;
     };
 
-    using MobArchetype = nith::HierarchicalArchetype<
+    using MobArchetype = nith::ecs::HierarchicalArchetype<
         TransformComponent,
         MobComponent>;
 
@@ -78,22 +78,33 @@ int main()
 
     mobArcheType.addEntity(1);
     mobArcheType.addChildEntity(1, 10);
-
     mobArcheType.addEntity(2);
-
-    mobArcheType.addChildEntity(10, 101);
-    mobArcheType.addChildEntity(2, 20);
+    mobArcheType.addChildEntity(1, 11);
 
     mobArcheType.addEntity(3);
-    mobArcheType.addChildEntity(20, 201);
-    mobArcheType.addChildEntity(3, 30);
+
+    mobArcheType.setComponent(2, MobComponent{"the 2"});
+    mobArcheType.setComponent(3, MobComponent{"the 3"});
+    mobArcheType.setComponent(10, MobComponent{"the 10"});
+    mobArcheType.setComponent(11, MobComponent{"the 11"});
+    mobArcheType.setComponent(1, MobComponent{"the 1"});
 
     mobArcheType.print();
+
+    mobArcheType.each<MobComponent>(
+        [](MobComponent &mob)
+        {
+            std::cout << mob.name << '\n';
+        });
+
     mobArcheType.removeEntity(1);
+
     mobArcheType.print();
 
-    mobArcheType.removeEntity(2);
-    mobArcheType.print();
-
+    mobArcheType.each<MobComponent>(
+        [](MobComponent &mob)
+        {
+            std::cout << mob.name << '\n';
+        });
     return 0;
 }

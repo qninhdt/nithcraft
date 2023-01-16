@@ -5,7 +5,7 @@
 
 #include "core/ecs/entity.hpp"
 
-namespace nith
+namespace nith::ecs
 {
     namespace internal
     {
@@ -64,16 +64,17 @@ namespace nith
     template <typename... T>
     class Archetype
     {
+        friend class iterator;
+
     public:
         Archetype()
         {
-            reserve(internal::ARCHETYPE_DEFAULT_SIZE);
         }
 
         void addEntity(const entity_id &id)
         {
             if (size() == capacity())
-                reserve(capacity() << 1);
+                reserve(capacity() ? capacity() * 2 : 16);
 
             // get a free index
             u32 index = size();
@@ -133,19 +134,24 @@ namespace nith
             return m_indexToEntity.size();
         }
 
+        template <typename... C>
+        void each(std::function<void(C...)> callback)
+        {
+        }
+
         void print()
         {
             for (auto i : m_indexToEntity)
             {
                 if (i)
-                    std::cout << i << ' ';
+                    std::cout << std::setw(4) << i;
                 else
-                    std::cout << "_ ";
+                    std::cout << std::setw(4) << "__";
             }
-            // std::cout << '\n';
+            std::cout << '\n';
             // for (auto [entity, index] : m_entityToIndex)
             //     std::cout << entity << " -> " << index << '\n';
-            std::cout << '\n';
+            // std::cout << '\n';
         }
 
     protected:
@@ -166,4 +172,4 @@ namespace nith
         umap<entity_id, u32> m_entityToIndex;
     };
 
-} // namespace nith
+} // namespace nith::ecs

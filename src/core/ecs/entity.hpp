@@ -2,7 +2,7 @@
 
 #include "core/types.hpp"
 
-namespace nith
+namespace nith::ecs
 {
     using entity_id = u32;
 
@@ -20,4 +20,4 @@ namespace nith
         u32 m_id;
     };
 
-} // namespace nith
+} // namespace nith::ecs

@@ -1,8 +1,8 @@
 #pragma once
 
-namespace nith
+namespace nith::ecs
 {
     struct Component
     {
-        };
-} // namespace nith
+    };
+} // namespace nith::ecs
