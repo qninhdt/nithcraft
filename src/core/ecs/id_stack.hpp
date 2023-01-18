@@ -1,8 +1,9 @@
 #pragma once
 
+#include "core/ecs/entity.hpp"
+
 namespace nith::ecs
 {
-    template <typename T>
     class IdStack
     {
     public:
@@ -10,7 +11,7 @@ namespace nith::ecs
         {
         }
 
-        T pop()
+        entity_id pop()
         {
             if (m_freeIdStack.empty())
             {
@@ -20,7 +21,7 @@ namespace nith::ecs
                 m_capacity = newCapacity;
             }
 
-            T id = m_freeIdStack.top();
+            entity_id id = m_freeIdStack.top();
             m_freeIdStack.pop();
 
             return id;
@@ -31,13 +32,13 @@ namespace nith::ecs
             return m_freeIdStack.empty();
         }
 
-        void push(const T &id)
+        void push(const entity_id &id)
         {
             m_freeIdStack.push(id);
         }
 
     private:
         u32 m_capacity;
-        stack<T> m_freeIdStack;
+        stack<entity_id> m_freeIdStack;
     };
 } // namespace nith::ecs

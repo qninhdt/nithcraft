@@ -91,7 +91,7 @@ namespace nith::ecs
 
         void removeEntity(const entity_id &id)
         {
-            i32 index = this->m_entityToIndex[id];
+            u32 index = this->m_entityToIndex[id];
             auto &hierarchy = this->template getComponentAt<HierarchyComponent>(index);
 
             if (hierarchy.parent)
@@ -110,7 +110,7 @@ namespace nith::ecs
                     prevSibling.nextSibling = hierarchy.nextSibling;
                 }
 
-                if (parent.firstChild == (u32)index)
+                if (parent.firstChild == index)
                 {
                     parent.firstChild = hierarchy.nextSibling;
                 }

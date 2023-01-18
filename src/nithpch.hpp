@@ -17,6 +17,7 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/ext/matrix_transform.hpp>
+#include <glm/gtx/euler_angles.hpp>
 
 // common files
 #include "core/types.hpp"

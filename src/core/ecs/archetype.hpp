@@ -64,8 +64,6 @@ namespace nith::ecs
     template <typename... T>
     class Archetype
     {
-        friend class iterator;
-
     public:
         Archetype()
         {
