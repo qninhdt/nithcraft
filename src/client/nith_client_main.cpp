@@ -102,68 +102,12 @@ struct d
 
 int main()
 {
-    // nith::DirtBlock dirt;
-    // dirt.setType(nith::DirtType::BASALT);
-    // // nith::Block &block = dirt;
-    // // std::cout << block.serialize() << '\n';
-    // nith::World world;
-    // world.m_chunkSystem.create<nith::ChunkArchetype>();
+    nith::DirtBlock dirt;
+    dirt.setType(nith::DirtType::BASALT);
+    // nith::Block &block = dirt;
+    // std::cout << block.serialize() << '\n';
+    nith::World world;
+    auto chunk = world.loadChunk({1, 2, 3});
 
-    entt::registry r;
-
-    entt::entity entt_shit;
-
-    // ankerl::nanobench::Bench().minEpochIterations(1 << 10).run(
-    //     "entt create",
-    //     [&]()
-    //     {
-    //         auto e = r.create();
-    //         r.emplace<a>(e);
-    //         r.emplace<b>(e);
-    //         r.emplace<c>(e);
-    //         r.emplace<d>(e);
-    //         ankerl::nanobench::doNotOptimizeAway(e);
-
-    //         entt_shit = e;
-    //     });
-
-    using at = nith::ecs::Archetype<a, b, c, d>;
-    nith::ecs::System<at> s;
-
-    nith::ecs::entity_id qninh_shit;
-
-    // ankerl::nanobench::Bench().minEpochIterations(1 << 18).run(
-    //     "qninh create",
-    //     [&]()
-    //     {
-    //         auto e = s.create<at>();
-    //         // s.
-    //         ankerl::nanobench::doNotOptimizeAway(e);
-    //         qninh_shit = e;
-    //     });
-
-    // ankerl::nanobench::Bench().minEpochIterations(1 << 20).run(
-    //     "entt get",
-    //     [&]()
-    //     {
-    //         auto e = r.get<a, b, c, d>(entt_shit);
-    //         ankerl::nanobench::doNotOptimizeAway(e);
-    //     });
-
-    // ankerl::nanobench::Bench().minEpochIterations(1 << 20).run(
-    //     "qninh get",
-    //     [&]()
-    //     {
-    //         auto &aa = s.getComponent<at, a>(qninh_shit);
-    //         auto &bb = s.getComponent<at, b>(qninh_shit);
-    //         auto &cc = s.getComponent<at, c>(qninh_shit);
-    //         auto &dd = s.getComponent<at, d>(qninh_shit);
-    //         aa.x[0] = 240404;
-    //         ankerl::nanobench::doNotOptimizeAway(aa);
-    //         ankerl::nanobench::doNotOptimizeAway(bb);
-    //         ankerl::nanobench::doNotOptimizeAway(cc);
-    //         ankerl::nanobench::doNotOptimizeAway(dd);
-    //     });
-
-    std::cout << s.getComponent<at, a>(qninh_shit).x[0];
+    std::cout << chunk.getPosition().z << '\n';
 }

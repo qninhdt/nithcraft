@@ -26,41 +26,58 @@ namespace nith::ecs
                 }
             }
 
+            template <typename U>
+            NITH_INLINE auto &getConstArchetype() const
+            {
+                if constexpr (std::is_same_v<T, U>)
+                    return archetype;
+                else
+                {
+                    static_assert(sizeof...(R) != 0, "Archetype not found");
+                    return rest.template getConstArchetypeArray<U>();
+                }
+            }
+
             T archetype;
             SystemBase<R...> rest;
         };
     } // namespace internal
 
-    template <typename... T>
+    template <typename S, typename... T>
     class System
     {
     public:
-        template <typename A, typename C>
-        NITH_INLINE auto &getComponent(const entity_id &entity)
+        template <typename A, typename C, typename E>
+        NITH_INLINE auto &getComponent(const E &entity)
         {
-            return m_base.template getArchetype<A>().template getComponent<C>(entity);
+            return m_base.template getArchetype<A>().template getComponent<C>(entity.getId());
         }
 
-        template <typename... A>
-        entity_id create()
+        template <typename A, typename C, typename E>
+        NITH_INLINE auto &getConstComponent(const E &entity) const
         {
-            // E entity;
-            // entity_id &id = ((Entity &)entity).m_id;
-            auto id = m_idStack.pop();
+            return m_base.template getConstArchetype<A>().template getConstComponent<C>(entity.getId());
+        }
+
+        template <typename E, typename... A>
+        E create()
+        {
+            E entity(*(S *)this);
+            entity_id &id = ((Entity<E, S> &)entity).m_id;
+            id = m_idStack.pop();
             (m_base.template getArchetype<A>().addEntity(id), ...);
-            // return entity;
-            return id;
+            return entity;
         }
 
         template <typename E, typename... A>
         void remove(const E &entity)
         {
-            entity_id &id = ((Entity &)entity).m_id;
+            entity_id &id = ((Entity<E, S> &)entity).m_id;
             m_idStack.push(id);
             (m_base.template getArchetype<A>().removeEntity(id), ...);
         }
 
-        // private:
+    private:
         internal::SystemBase<T...> m_base;
         IdStack m_idStack;
     };

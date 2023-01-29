@@ -16,9 +16,11 @@ namespace nith
     using ChunkArchetype = ecs::Archetype<
         ChunkPosition>;
 
-    using ChunkSystem = ecs::System<ChunkArchetype>;
+    class ChunkSystem : public ecs::System<ChunkSystem, ChunkArchetype>
+    {
+    };
 
-    class Chunk
+    class Chunk : public ecs::Entity<Chunk, ChunkSystem>
     {
     public:
         static constexpr u32 CHUNK_WIDTH = 32;
@@ -26,6 +28,13 @@ namespace nith
         static constexpr u32 CHUNK_DEPTH = 32;
         static constexpr u32 CHUNK_VOLUME = CHUNK_WIDTH * CHUNK_HEIGHT * CHUNK_DEPTH;
 
-    private:
+        Chunk(ChunkSystem &system) : ecs::Entity<Chunk, ChunkSystem>(system)
+        {
+        }
+
+        ChunkPosition &getPosition() const
+        {
+            return this->getConstComponent<ChunkArchetype, ChunkPosition>();
+        }
     };
 } // namespace nith

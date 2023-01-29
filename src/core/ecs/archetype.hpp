@@ -32,6 +32,18 @@ namespace nith::ecs
                 }
             }
 
+            template <typename U>
+            NITH_INLINE vector<U> &getConstComponentArray() const
+            {
+                if constexpr (std::is_same_v<T, U>)
+                    return m_componentArray;
+                else
+                {
+                    static_assert(sizeof...(R) != 0, "Component not found");
+                    return m_rest.template getConstComponentArray<U>();
+                }
+            }
+
             NITH_INLINE void callAttachCallback(const u32 &index)
             {
                 if constexpr (requires { T::onAttach; })
@@ -42,7 +54,6 @@ namespace nith::ecs
 
             NITH_INLINE void resizeComponentArrays(const u32 &newSize)
             {
-                // std::cout << typeid(T).name() << ": " << newSize << '\n';
                 m_componentArray.resize(newSize);
                 if constexpr (sizeof...(R) > 0)
                     m_rest.resizeComponentArrays(newSize);
@@ -57,7 +68,7 @@ namespace nith::ecs
 
         private:
             ArchetypeBase<R...> m_rest;
-            vector<T> m_componentArray;
+            mutable vector<T> m_componentArray;
         };
     }
 
@@ -106,6 +117,13 @@ namespace nith::ecs
         }
 
         template <typename U>
+        NITH_INLINE U &getConstComponent(const entity_id &id) const
+        {
+            // assert
+            return m_base.template getConstComponentArray<U>()[m_entityToIndex[id] - 1];
+        }
+
+        template <typename U>
         NITH_INLINE void setComponent(const entity_id &id, const U &component)
         {
             m_base.template getComponentArray<U>()[m_entityToIndex[id] - 1] = component;
@@ -116,6 +134,13 @@ namespace nith::ecs
         {
             // assert
             return m_base.template getComponentArray<U>()[index - 1];
+        }
+
+        template <typename U>
+        NITH_INLINE U &getConstComponentAt(const u32 &index) const
+        {
+            // assert
+            return m_base.template getConstComponentArray<U>()[index - 1];
         }
 
         NITH_INLINE u32 size() const
@@ -162,8 +187,8 @@ namespace nith::ecs
 
         internal::ArchetypeBase<T...> m_base;
 
-        vector<entity_id> m_indexToEntity;
-        umap<entity_id, u32> m_entityToIndex;
+        mutable vector<entity_id> m_indexToEntity;
+        mutable umap<entity_id, u32> m_entityToIndex;
     };
 
 } // namespace nith::ecs
