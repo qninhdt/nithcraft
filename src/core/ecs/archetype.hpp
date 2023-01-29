@@ -65,10 +65,6 @@ namespace nith::ecs
     class Archetype
     {
     public:
-        Archetype()
-        {
-        }
-
         void addEntity(const entity_id &id)
         {
             if (size() == capacity())

@@ -9,6 +9,7 @@
 #include <glm/glm.hpp>
 #include <glm/ext/matrix_transform.hpp>
 
+#define NITH_UNUSED [[gnu::unused]]
 #define NITH_INLINE inline __attribute__((always_inline))
 #define NITH_STATIC_ERROR(message) static_assert(nith::internal::always_false<T> && message);
 

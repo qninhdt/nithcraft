@@ -36,3 +36,9 @@ target_link_libraries(${MAIN} PUBLIC glm::glm)
 
 find_package(OpenGL REQUIRED)
 target_link_libraries(${MAIN} PUBLIC OpenGL::GL)
+
+add_subdirectory(third_party/nanobench)
+target_link_libraries(${MAIN} PUBLIC nanobench)
+
+find_package(EnTT CONFIG REQUIRED)
+target_link_libraries(${MAIN} PRIVATE EnTT::EnTT)
