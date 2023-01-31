@@ -2,6 +2,7 @@
 
 #include "util/math.hpp"
 #include "world/block/block_material.hpp"
+#include "core/const_string.hpp"
 
 namespace nith
 {
@@ -85,7 +86,7 @@ namespace nith
             m_base.template getHolder<NAME>().value = value;
         }
 
-        u64 serialize() const
+        u64 serializeState() const
         {
             u64 output = 0;
 
@@ -95,7 +96,7 @@ namespace nith
             return output;
         }
 
-        void deserialize(const u64 &input)
+        void deserializeState(const u64 &input)
         {
             u64 input0 = input;
             (deserializeOne<S>(input0), ...);
@@ -119,14 +120,62 @@ namespace nith
         internal::SingleStateHolder<S...> m_base;
     };
 
-    // 1 byte for material
-    // 7 bytes data
-    using packed_block = u64;
+    union packed_block
+    {
+        struct
+        {
+            u32 material;
+            u32 state;
+        };
+
+        u64 data;
+
+        bool operator==(const packed_block &other) const
+        {
+            return data == other.data;
+        }
+    };
+
+    struct BlockFace
+    {
+        enum Enum
+        {
+            NORTH,
+            EAST,
+            UP,
+            SOUTH,
+            WEST,
+            DOWN
+        };
+
+        static Enum FromDirection(const ivec3 &dir)
+        {
+            if (dir.z == 1)
+                return NORTH;
+            if (dir.z == -1)
+                return SOUTH;
+            if (dir.y == 1)
+                return UP;
+            if (dir.y == -1)
+                return DOWN;
+            if (dir.x == 1)
+                return EAST;
+            if (dir.x == -1)
+                return WEST;
+
+            return NORTH;
+        }
+    };
+
+    class Chunk;
+    class Block;
+
+    using IBlock = std::unique_ptr<Block>;
 
     class Block
     {
     public:
-        Block(const BlockMaterial &material) : m_material(material)
+        Block(const BlockMaterial &material) : m_material(material), m_chunk(nullptr)
         {
         }
 
@@ -135,18 +184,16 @@ namespace nith
             return m_material;
         }
 
-        virtual packed_block serialize() const
-        {
-            return (packed_block)m_material;
-        }
+        virtual u32 serializeState() const { return 0; };
 
-        virtual void deserialize(const packed_block &data)
-        {
-            m_material = (BlockMaterial)data;
-        }
+        virtual void deserializeState(const u32 &state){};
+
+        virtual bool canSeeThrough(const BlockFace::Enum &face) { return false; };
+        static IBlock Unpack(const packed_block &data);
 
     private:
         BlockMaterial m_material;
+        Chunk *m_chunk;
     };
 
     template <typename... S>
@@ -157,16 +204,26 @@ namespace nith
         {
         }
 
-        packed_block serialize() const override
+        u32 serializeState() const
         {
-            return (StateHolder<S...>::serialize() << 8) | Block::serialize();
+            return StateHolder<S...>::serializeState();
         }
 
-        void deserialize(const packed_block &data) override
+        void deserializeState(const u32 &state)
         {
-            Block::deserialize(data);
-            StateHolder<S...>::deserialize(data >> 8);
+            StateHolder<S...>::deserializeState(state);
         }
     };
-
 } // namespace nith
+
+namespace std
+{
+    template <>
+    struct hash<nith::packed_block>
+    {
+        size_t operator()(const nith::packed_block &block) const
+        {
+            return hash<nith::u64>()(block.data);
+        }
+    };
+}

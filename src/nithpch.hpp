@@ -10,6 +10,7 @@
 #include <iostream>
 #include <filesystem>
 #include <iomanip>
+#include <algorithm>
 
 // third-party libraries
 #include <robin_hood.h>
@@ -18,6 +19,7 @@
 #include <glm/glm.hpp>
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/gtx/euler_angles.hpp>
+#include <glm/gtx/hash.hpp>
 
 // common files
 #include "core/types.hpp"

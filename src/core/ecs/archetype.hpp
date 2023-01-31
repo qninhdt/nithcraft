@@ -20,8 +20,10 @@ namespace nith::ecs
         class ArchetypeBase<T, R...>
         {
         public:
+            ArchetypeBase() : m_componentArray(nullptr) {}
+
             template <typename U>
-            NITH_INLINE vector<U> &getComponentArray()
+            NITH_INLINE U *&getComponentArray()
             {
                 if constexpr (std::is_same_v<T, U>)
                     return m_componentArray;
@@ -33,7 +35,7 @@ namespace nith::ecs
             }
 
             template <typename U>
-            NITH_INLINE vector<U> &getConstComponentArray() const
+            NITH_INLINE U *&getConstComponentArray() const
             {
                 if constexpr (std::is_same_v<T, U>)
                     return m_componentArray;
@@ -44,31 +46,54 @@ namespace nith::ecs
                 }
             }
 
-            NITH_INLINE void callAttachCallback(const u32 &index)
+            NITH_INLINE void callConstructor(const u32 &index)
             {
-                if constexpr (requires { T::onAttach; })
-                    m_componentArray[index].onAttach();
+                new (&m_componentArray[index]) T();
                 if constexpr (sizeof...(R) > 0)
-                    m_rest.callAttachCallback(index);
+                    m_rest.callConstructor(index);
             }
 
-            NITH_INLINE void resizeComponentArrays(const u32 &newSize)
+            NITH_INLINE void callDeconstructor(const u32 &index)
             {
-                m_componentArray.resize(newSize);
                 if constexpr (sizeof...(R) > 0)
-                    m_rest.resizeComponentArrays(newSize);
+                    m_rest.callDeconstructor(index);
+                m_componentArray[index].~T();
+            }
+
+            NITH_INLINE void resizeComponentArrays(const u32 &oldSize, const u32 &newSize)
+            {
+                auto oldArray = m_componentArray;
+                m_componentArray = (T *)new u8[newSize * sizeof(T)];
+
+                if (oldArray)
+                {
+                    for (u32 i = 0; i < oldSize; ++i)
+                        m_componentArray[i] = oldArray[i];
+
+                    delete[] ((char *)oldArray);
+                }
+
+                if constexpr (sizeof...(R) > 0)
+                    m_rest.resizeComponentArrays(oldSize, newSize);
+            }
+
+            NITH_INLINE void freeComponentArrays()
+            {
+                delete[] ((char *)m_componentArray);
+                if constexpr (sizeof...(R) > 0)
+                    m_rest.freeComponentArrays();
             }
 
             NITH_INLINE void copyComponents(const u32 &from, const u32 &to)
             {
-                m_componentArray[to - 1] = std::move(m_componentArray[from - 1]);
+                m_componentArray[to] = std::move(m_componentArray[from]);
                 if constexpr (sizeof...(R) > 0)
                     m_rest.copyComponents(from, to);
             }
 
         private:
             ArchetypeBase<R...> m_rest;
-            mutable vector<T> m_componentArray;
+            mutable T *m_componentArray;
         };
     }
 
@@ -90,7 +115,7 @@ namespace nith::ecs
             // entity -> index
             m_entityToIndex[id] = index + 1;
 
-            m_base.callAttachCallback(index);
+            m_base.callConstructor(index);
         }
 
         void removeEntity(const entity_id &id)
@@ -100,7 +125,9 @@ namespace nith::ecs
             const auto lastIndex = size() - 1;
             const auto lastEntity = m_indexToEntity[lastIndex];
 
-            m_base.copyComponents(lastIndex, index - 1);
+            m_base.callDeconstructor(index);
+
+            m_base.copyComponents(lastIndex, index);
 
             m_indexToEntity[index] = lastEntity;
             m_entityToIndex[lastEntity] = index + 1;
@@ -173,6 +200,16 @@ namespace nith::ecs
             // std::cout << '\n';
         }
 
+        ~Archetype()
+        {
+            for (auto &[entity, index] : m_entityToIndex)
+            {
+                m_base.callDeconstructor(index);
+            }
+
+            m_base.freeComponentArrays();
+        }
+
     protected:
         void reserve(const u32 &newSize)
         {
@@ -182,7 +219,7 @@ namespace nith::ecs
             // resize index -> entity lookup table
             m_indexToEntity.resize(newSize);
 
-            m_base.resizeComponentArrays(newSize);
+            m_base.resizeComponentArrays(capacity(), newSize);
         }
 
         internal::ArchetypeBase<T...> m_base;

@@ -94,20 +94,47 @@ struct b
 struct c
 {
     int x[10] = {1};
+    c()
+    {
+        std::cout << "create c\n";
+    }
+
+    ~c()
+    {
+        std::cout << "remove c\n";
+    }
 };
 struct d
 {
     int x[10] = {1};
+
+    d()
+    {
+        std::cout << "create d\n";
+    }
+
+    ~d()
+    {
+        std::cout << "remove d\n";
+    }
 };
 
 int main()
 {
-    nith::DirtBlock dirt;
-    dirt.setType(nith::DirtType::BASALT);
+    // nith::DirtBlock dirt;
+    // dirt.setType(nith::DirtType::BASALT);
     // nith::Block &block = dirt;
-    // std::cout << block.serialize() << '\n';
-    nith::World world;
-    auto chunk = world.loadChunk({1, 2, 3});
 
-    std::cout << chunk.getPosition().z << '\n';
+    // nith::World world;
+    // auto chunk = world.loadChunk({1, 2, 3});
+
+    // std::cout << chunk.getPosition().z << '\n';
+    using ach = nith::ecs::Archetype<c, d>;
+    // using sys = nith::ecs::System<ach>;
+
+    ach lmao;
+    lmao.addEntity(1);
+    lmao.addEntity(2);
+    lmao.removeEntity(1);
+    lmao.addEntity(3);
 }
