@@ -8,7 +8,8 @@ namespace nith
         m_height(height),
         m_mousePos(0, 0),
         m_title(title),
-        m_isClosed(false)
+        m_isClosed(false),
+        m_enableCursor(true)
     {
         updateMouse();
         m_lastMousePos = m_mousePos;
@@ -37,6 +38,7 @@ namespace nith
         glfwSetWindowSizeCallback(m_nativeWindow, GlfwResizeCallback);
         glfwSetWindowCloseCallback(m_nativeWindow, GlfwCloseCallback);
         glfwSetCursorPosCallback(m_nativeWindow, GlfwMouseMoveCallback);
+        glfwSetKeyCallback(m_nativeWindow, GlfwKeyPressedCallback);
 
         return true;
     }
@@ -87,7 +89,19 @@ namespace nith
     void Window::GlfwMouseMoveCallback(GLFWwindow* nativeWindow, double x, double y)
     {
         Window& window = *(Window*)glfwGetWindowUserPointer(nativeWindow);
-        
+
+    }
+
+    void Window::GlfwKeyPressedCallback(GLFWwindow* nativeWindow, int key, int scancode, int action, int mods)
+    {
+        Window& window = *(Window*)glfwGetWindowUserPointer(nativeWindow);
+
+        if (action == GLFW_PRESS)
+            window.m_keyPressedListeners((Keycode)key, false);
+        else if (action == GLFW_REPEAT)
+            window.m_keyPressedListeners((Keycode)key, true);
+        else
+            window.m_keyReleasedListeners((Keycode)key);
     }
 
     void Window::updateMouse()
@@ -135,9 +149,29 @@ namespace nith
         return glfwGetKey(m_nativeWindow, (i32) key) == GLFW_PRESS;
     }
 
+    void Window::toggleCursor()
+    {
+        m_enableCursor = !m_enableCursor;
+
+        if (m_enableCursor)
+            glfwSetInputMode(m_nativeWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        else
+            glfwSetInputMode(m_nativeWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    }
+
+    bool Window::isEnableCursor() const
+    {
+        return m_enableCursor;
+    }
+
     vec2 Window::getDeltaMousePos() const
     {
         return m_mousePos - m_lastMousePos;
+    }
+
+    void Window::onKeyPressed(std::function<void(const Keycode&, const bool&)> callback)
+    {
+        m_keyPressedListeners.append(callback);
     }
 
     Window::~Window()

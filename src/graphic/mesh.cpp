@@ -186,7 +186,7 @@ namespace nith
         glDeleteVertexArrays(1, &m_vao);
     }
 
-    void Mesh::GenerateGlobalIBo()
+    void Mesh::GenerateGlobalIBO()
     {
         glGenBuffers(1, &s_globalIBO);
 

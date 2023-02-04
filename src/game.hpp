@@ -30,13 +30,15 @@ namespace nith
 
         Camera& getCamera();
 
-        void tick();
+        void tick(const f32& deltaTime);
+
+        void render(const f32& deltaTime);
         
         static Game& Get();
 
         ~Game();
 
-    //private:
+    private:
 
         static Game* s_game;
 

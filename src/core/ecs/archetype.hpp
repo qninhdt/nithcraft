@@ -181,23 +181,10 @@ namespace nith::ecs
         }
 
         template <typename... C>
-        void each(std::function<void(C...)> callback)
+        void each(auto callback)
         {
-        }
-
-        void print()
-        {
-            for (auto i : m_indexToEntity)
-            {
-                if (i)
-                    std::cout << std::setw(4) << i;
-                else
-                    std::cout << std::setw(4) << "__";
-            }
-            std::cout << '\n';
-            // for (auto [entity, index] : m_entityToIndex)
-            //     std::cout << entity << " -> " << index << '\n';
-            // std::cout << '\n';
+            for (u32 i = 1; i <= size(); ++i)
+                callback(this->getComponentAt<C>(i)...);
         }
 
         ~Archetype()

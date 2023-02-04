@@ -26,6 +26,7 @@ namespace nith
         m_camera(Application::Get().getMainWindow().getAspect(), glm::radians(50.0f), 0.2f, 1000.0f)
     {
         s_game = this;
+        m_world.loadChunk({ 0, 0, 0 });
     }
 
     Camera& Game::getCamera()
@@ -33,45 +34,43 @@ namespace nith
         return m_camera;
     }
 
-    void Game::tick()
+    void Game::tick(const f32& deltaTime)
     {
         m_input.tick();
 
-        if (m_input.isMouseMoved || m_input.isMoved)
+        if (!Application::Get().getMainWindow().isEnableCursor())
         {
-            auto& transform = m_camera.getTransform();
-
-            if (m_input.isMoved)
+            if (m_input.isMouseMoved || m_input.isMoved)
             {
-                vec3 playerDir =
-                    f32(m_input.right - m_input.left) * m_camera.getRight() +
-                    f32(m_input.up - m_input.down) * m_camera.getUp() +
-                    f32(m_input.forward - m_input.backward) * m_camera.getForward();
+                auto& transform = m_camera.getTransform();
 
-                if (glm::length(playerDir) > 0.00001f)
+                if (m_input.isMoved)
                 {
-                    playerDir = glm::normalize(playerDir);
-                    transform.move(playerDir * 0.1f);
+                    vec3 playerDir =
+                        f32(m_input.right - m_input.left) * m_camera.getRight() +
+                        f32(m_input.up - m_input.down) * m_camera.getUp() +
+                        f32(m_input.forward - m_input.backward) * m_camera.getForward();
+
+                    if (glm::length(playerDir) > 0.00001f)
+                    {
+                        playerDir = glm::normalize(playerDir);
+                        transform.move(playerDir * 0.1f);
+                    }
                 }
+
+                if (m_input.isMouseMoved)
+                {
+                    vec3 rotation = transform.getRotation();
+                    rotation -= vec3({ m_input.mouseDelta.y, m_input.mouseDelta.x, 0 }) * 0.001f;
+
+                    rotation.x = std::max(rotation.x, -f32(pi - 0.1f) / 2);
+                    rotation.x = std::min(rotation.x, +f32(pi - 0.1f) / 2);
+
+                    transform.setRotation(rotation);
+                }
+
+                m_camera.updateView();
             }
-
-            if (m_input.isMouseMoved)
-            {
-                vec3 rotation = transform.getRotation();
-                rotation -= vec3({ m_input.mouseDelta.y, m_input.mouseDelta.x, 0 }) * 0.001f;
-                
-                rotation.x = std::max(rotation.x, -f32(pi-0.1f) / 2);
-                rotation.x = std::min(rotation.x, +f32(pi-0.1f) / 2);
-
-                transform.setRotation(rotation);
-            }
-
-            m_camera.updateView();
-        }
-
-        for (auto& [_, chunk] : m_world.getChunkMap())
-        {
-            chunk.render();
         }
     }
 
@@ -83,6 +82,11 @@ namespace nith
     Game::~Game()
     {
         s_game = nullptr;
+    }
+
+    void Game::render(const f32& deltaTime)
+    {
+        m_world.render(deltaTime);
     }
 
 }

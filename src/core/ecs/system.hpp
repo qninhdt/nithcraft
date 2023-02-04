@@ -47,6 +47,7 @@ namespace nith::ecs
     class System
     {
     public:
+
         template <typename A, typename C, typename E>
         auto &getComponent(const E &entity)
         {
@@ -77,6 +78,12 @@ namespace nith::ecs
             entity_id &id = ((Entity<E, S> &)entity).m_id;
             (m_base.template getArchetype<A>().removeEntity(id), ...);
             m_idStack.push(id);
+        }
+
+        template <typename A, typename... C>
+        void each(auto callback)
+        {
+            m_base.template getArchetype<A>().each<C...>(callback);
         }
 
     private:

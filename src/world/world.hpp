@@ -16,6 +16,9 @@ namespace nith
         void setBlock(const ivec3 &pos, const Block &block);
         void setPackedBlock(const ivec3 &pos, const packed_block &block);
 
+        void tick(const f32& deltaTime);
+        void render(const f32& deltaTime);
+
         umap<ivec3, Chunk> getChunkMap() const;
 
     private:

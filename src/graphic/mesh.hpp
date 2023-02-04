@@ -45,7 +45,7 @@ namespace nith
 
         ~Mesh();
 
-        static void GenerateGlobalIBo();
+        static void GenerateGlobalIBO();
 
     private:
         static GLuint ToGLType(const Type &type);

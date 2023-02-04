@@ -27,7 +27,13 @@ namespace nith
 
         bool isKeyPressed(const Keycode& key) const;
 
+        void toggleCursor();
+
+        bool isEnableCursor() const;
+
         vec2 getDeltaMousePos() const;
+
+        void onKeyPressed(std::function<void(const Keycode&, const bool&)> callback);
 
         ~Window();
 
@@ -35,6 +41,7 @@ namespace nith
         static void GlfwResizeCallback(GLFWwindow *nativeWindow, int width, int height);
         static void GlfwCloseCallback(GLFWwindow *nativeWindow);
         static void GlfwMouseMoveCallback(GLFWwindow* nativeWindow, double x, double y);
+        static void GlfwKeyPressedCallback(GLFWwindow* nativeWindow, int key, int scancode, int action, int mods);
 
         void updateMouse();
 
@@ -46,7 +53,7 @@ namespace nith
         vec2 m_lastMousePos;
         string m_title;
         bool m_isClosed;
-
+        bool m_enableCursor;
 
         eventpp::CallbackList<void(const Keycode&, const bool&)> m_keyPressedListeners;
         eventpp::CallbackList<void(const Keycode&)> m_keyReleasedListeners;

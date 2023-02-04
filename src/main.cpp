@@ -10,6 +10,7 @@
 #include "world/block/nature/air_block.hpp"
 #include "game.hpp"
 #include "core/ecs/system.hpp"
+#include "debug_layer.hpp"
 
 using namespace nith;
 
@@ -23,64 +24,49 @@ int main()
     Window& mainWindow = nithClient.getMainWindow();
     mainWindow.open();
 
+    DebugLayer debugLayer(mainWindow);
+    
+    Mesh::GenerateGlobalIBO();
+    
     Game game;
     Camera& camera = game.getCamera();
 
-    camera.getTransform().setPosition({ 0, 0, -1 });
+    camera.getTransform().setPosition({ 16, 16, -16 });
     camera.updateView();
-
-    glfwSetInputMode(mainWindow.getNativeWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     shaderManager.loadShaderFromFile("D:/github/nithcraft/resources/shaders/basic.vert",
                                      "D:/github/nithcraft/resources/shaders/basic.frag");
 
     BasicShader basicShader = shaderManager.getShader<BasicShader>("basic");
 
-    float vertices[] = {
-        0.5f, 0.5f, 0.0f, 0.5f, 1.0f, 0.5f,   // top right
-        0.5f, -0.5f, 0.0f, 1.0f, 1.0f, 0.0f,  // bottom right
-        -0.5f, -0.5f, 0.0f, 0.5f, 1.0f, 0.5f, // bottom left
-        -0.5f, 0.5f, 0.0f, 1.0f, 1.0f, 0.5f,  // top left
-    };
-    unsigned int indices[] = {
-        // note that we start from 0!
-        0, 1, 3, // first Triangle
-        1, 2, 3  // second Triangle
-    };
-
-    Mesh::GenerateGlobalIBo();
-
-    Mesh basicMesh;
-    basicMesh.setAttributes({
-        {Type::VEC3}, // position
-        {Type::VEC3}  // color
-    });
-
-    basicMesh.setVerticesData(vertices, sizeof(vertices));
-    basicMesh.setIndices(indices, 6);
-    basicMesh.setDrawCount(6);
-
-    game.m_world.loadChunk({ 0, 0, 0 });
-
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
     glCullFace(GL_FRONT);
 
+    mainWindow.onKeyPressed(
+        [&](const Keycode& key, const bool& isRepeated)
+        {
+            if (key == Keycode::F1 && !isRepeated)
+            mainWindow.toggleCursor();
+        }
+    );
+
     while (!mainWindow.isClosed())
     {
         if (mainWindow.isKeyPressed(Keycode::ESCAPE))
-            mainWindow.close();
+            mainWindow.close();;
 
-
-        basicShader.setUniform<"projection_view">(camera.getProjectionView());
+        game.tick(0);
 
         mainWindow.beginLoop();
 
+        basicShader.setUniform<"projection_view">(camera.getProjectionView());
         basicShader.use();
-        game.tick();
 
-        basicMesh.drawTriangles();
+        game.render(0);
+
+        debugLayer.render();
 
         mainWindow.endLoop();
     }

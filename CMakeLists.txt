@@ -46,6 +46,9 @@ target_link_libraries(${MAIN} PRIVATE EnTT::EnTT)
 find_package(eventpp CONFIG REQUIRED)
 target_link_libraries(${MAIN} PRIVATE eventpp::eventpp)
 
+find_package(imgui CONFIG REQUIRED)
+target_link_libraries(${MAIN} PRIVATE imgui::imgui)
+
 if (MSVC)
     target_link_options(${MAIN} PRIVATE $<$<CONFIG:Debug>:/INCREMENTAL>)
     target_compile_options(${MAIN} PRIVATE $<$<CONFIG:Debug>:/Zi>)

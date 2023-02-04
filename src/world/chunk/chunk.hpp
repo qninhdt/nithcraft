@@ -45,7 +45,8 @@ namespace nith
         IBlock getBlock(const uvec3& pos) const;
         void setBlock(const uvec3& pos, const packed_block& block);
 
-        void render() const;
+        void tick(const f32& deltaTime);
+        void render(const f32& deltaTime);
 
         World& getWorld();
 

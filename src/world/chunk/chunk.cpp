@@ -115,7 +115,11 @@ namespace nith
         data.blocks.set(Chunk::BlockPosToIndex(pos), block);
     }
 
-    void Chunk::render() const
+    void Chunk::tick(const f32& deltaTime)
+    {
+    }
+
+    void Chunk::render(const f32& deltaTime)
     {
         auto& renderer = this->getConstComponent<ChunkArchetype, ChunkRenderer>();
         renderer.mesh.drawTriangles();

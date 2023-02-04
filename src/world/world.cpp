@@ -82,6 +82,20 @@ namespace nith
         chunk.setBlock(localPos, block);
     }
 
+    void World::tick(const f32& deltaTime)
+    {
+    }
+
+    void World::render(const f32& deltaTime)
+    {
+        m_chunkSystem.each<ChunkArchetype, ChunkRenderer>(
+            [&](ChunkRenderer& renderer)
+            {
+                renderer.mesh.drawTriangles();
+            }
+        );
+    }
+
     umap<ivec3, Chunk> World::getChunkMap() const
     {
         return m_chunkMap;
