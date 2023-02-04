@@ -27,7 +27,7 @@ namespace nith
         class ShaderBase<FirstUniform, Uniforms...>
         {
         public:
-            NITH_INLINE void loadUniforms(const GLuint &programId)
+            void loadUniforms(const GLuint &programId)
             {
                 m_uniformLocation = glGetUniformLocation(programId, FirstUniform.value);
                 if constexpr (sizeof...(Uniforms) > 0)
@@ -35,7 +35,7 @@ namespace nith
             }
 
             template <const_string Name>
-            NITH_INLINE GLint getUniformLocation() const
+            GLint getUniformLocation() const
             {
                 if constexpr (FirstUniform == Name)
                     return m_uniformLocation;

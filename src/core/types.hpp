@@ -4,13 +4,18 @@
 #include <stack>
 #include <queue>
 #include <string>
+#include <array>
 
 #include <robin_hood.h>
 #include <glm/glm.hpp>
 #include <glm/ext/matrix_transform.hpp>
 
-#define NITH_UNUSED [[gnu::unused]]
-#define NITH_INLINE inline __attribute__((always_inline))
+#ifdef _MSC_VER
+    #define NITH_UNUSED [[maybe_unused]]
+#else
+    #define NITH_UNUSED [[gnu::unused]]
+#endif
+
 #define NITH_STATIC_ERROR(message) static_assert(nith::internal::always_false<T> && message);
 
 namespace nith
@@ -58,13 +63,21 @@ namespace nith
     template <typename V>
     using uset = robin_hood::unordered_set<V>;
 
+    template <typename V, u32 size>
+    using array = std::array<V, size>;
+    
     template <typename V>
     using stack = std::stack<V>;
+
+    template <typename... V>
+    using tuple = std::tuple<V...>;
 
     template <typename V>
     using queue = std::queue<V>;
 
     template <typename V>
     using vector = std::vector<V>;
+
+    constexpr double pi = 3.14159265358979323846;
 
 } // namespace nith

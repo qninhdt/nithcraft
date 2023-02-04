@@ -1,4 +1,4 @@
-#include "client/resources/shader_manager.hpp"
+#include "resources/shader_manager.hpp"
 #include "util/file.hpp"
 
 namespace nith

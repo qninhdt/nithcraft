@@ -45,12 +45,14 @@ namespace nith
 
         ~Mesh();
 
+        static void GenerateGlobalIBo();
+
     private:
         static GLuint ToGLType(const Type &type);
-
         static u32 GetElementCount(const Type &type);
-
         static u32 GetTypeSize(const Type &type);
+
+        static GLuint s_globalIBO;
 
         GLuint m_vao;
         GLuint m_vbo;

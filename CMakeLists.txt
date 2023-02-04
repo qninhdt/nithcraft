@@ -6,9 +6,9 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
 
-set(CMAKE_CXX_FLAGS "-Wall -Wextra")
-set(CMAKE_CXX_FLAGS_DEBUG "-g")
-set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+#set(CMAKE_CXX_FLAGS "-Wall -Wextra")
+#set(CMAKE_CXX_FLAGS_DEBUG "-g")
+#set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
 set(CMAKE_CXX_STANDARD 20)
 
@@ -42,3 +42,11 @@ target_link_libraries(${MAIN} PUBLIC nanobench)
 
 find_package(EnTT CONFIG REQUIRED)
 target_link_libraries(${MAIN} PRIVATE EnTT::EnTT)
+
+find_package(eventpp CONFIG REQUIRED)
+target_link_libraries(${MAIN} PRIVATE eventpp::eventpp)
+
+if (MSVC)
+    target_link_options(${MAIN} PRIVATE $<$<CONFIG:Debug>:/INCREMENTAL>)
+    target_compile_options(${MAIN} PRIVATE $<$<CONFIG:Debug>:/Zi>)
+endif()

@@ -18,33 +18,28 @@ namespace nith
         {
             using T = typename S::type;
 
-            template <const_string NAME>
-            NITH_INLINE auto &getHolder()
+            template <const_string name>
+            auto &getHolder()
             {
-                if constexpr (S::name == NAME)
+                if constexpr (S::name == name)
                     return *this;
                 else
                 {
                     static_assert(sizeof...(R) > 0 && "Unknown state");
-                    return rest.template getHolder<NAME>();
+                    return rest.template getHolder<name>();
                 }
             }
 
-            template <const_string NAME>
-            NITH_INLINE auto &getConstHolder() const
+            template <const_string name>
+            auto &getConstHolder() const
             {
-                if constexpr (S::name == NAME)
+                if constexpr (S::name == name)
                     return *this;
                 else
                 {
                     static_assert(sizeof...(R) > 0 && "Unknown state");
-                    return rest.template getConstHolder<NAME>();
+                    return rest.template getConstHolder<name>();
                 }
-            }
-
-            auto &self()
-            {
-                return *this;
             }
 
             T value;
@@ -54,43 +49,177 @@ namespace nith
     }
 
     namespace block
-    {
-        template <typename T, const_string NAME, u32 NUM_BITS>
+    {   
+        template <typename T, const_string pname, u32 pnum_bits>
         struct state
         {
             using type = T;
-            static constexpr const_string name = NAME;
-            static constexpr u32 num_bits = NUM_BITS;
+            static constexpr const_string name = pname;
+            static constexpr u32 num_bits = pnum_bits;
+            static constexpr u32 name_length = name.length();
+
+            T value;
         };
 
-        template <const_string NAME, u32 NUM_BITS>
-        using int_state = block::state<u32, NAME, NUM_BITS>;
+        template <const_string name, u32 num_bits>
+        using int_state = block::state<u32, name, num_bits>;
 
-        template <const_string NAME>
-        using bool_state = block::state<bool, NAME, 1>;
+        template <const_string name>
+        using bool_state = block::state<bool, name, 1>;
+
+        template <typename T>
+        concept is_state = requires
+        {
+            typename T::type;
+            { T::num_bits } -> std::same_as<const u32&>;
+            { T::name_length } -> std::same_as<const u32&>;
+            { T::name } -> std::same_as <const const_string<T::name_length>&>;
+        };
+
+        template <typename T>
+        concept is_state_holder = requires(T t)
+        {   
+            { t.getHolder() } -> std::same_as<decltype(t.getHolder())>;
+        };
+
+        template <is_state_holder T>
+        using holder_of = std::remove_reference_t<decltype(T{}.getHolder()) > ;
+
+        template <typename T>
+        concept is_state_or_state_holder = is_state<T> || is_state_holder<T>;
+
+        template <is_state_or_state_holder... S>
+        class state_holder : public S...
+        {
+        public:
+            template <const_string name>
+            auto& get() const
+            {
+                return get_impl<name, S...>();
+            }
+            
+            template <const_string name>
+            static constexpr bool has() {
+                return has_impl<name, S...>();
+            }
+
+            template <const_string name>
+            using type = decltype(type_impl<name, S...>());
+
+            template <const_string name, typename T>
+            void set(const T& value)
+            {
+                static_assert(std::is_same_v<T, type<name>>);
+                * (T*)& get<name>() = value;
+            }
+
+            state_holder<S...>& getHolder()
+            {
+                return *this;
+            }
+
+        private:
+
+            template <const_string name, is_state T, typename... R>
+            static auto type_impl()
+            {
+                if constexpr (T::name == name)
+                    return typename T::type{};
+                else
+                {
+                    static_assert(sizeof...(R) > 0);
+                    return type_impl<name, R...>();
+                }
+            }
+
+            template <const_string name, is_state_holder T, typename... R>
+            static auto type_impl()
+            {
+                if constexpr (T::template has<name>())
+                    return typename T::template type<name>{};
+                else
+                {
+                    static_assert(sizeof...(R) > 0);
+                    return type_impl<name, R...>();
+                }
+            }
+
+            template <const_string name, is_state T, typename... R>
+            auto& get_impl() const
+            {
+                if constexpr (T::name == name)
+                    return ((T*)this)->value;
+                else 
+                {
+                    static_assert(sizeof...(R) > 0);
+                    return get_impl<name, R...>();
+                }
+            }
+
+            template <const_string name, is_state_holder T, typename... R>
+            auto& get_impl() const
+            {
+                if constexpr (T::template has<name>())
+                    return T::template get<name>();
+                else 
+                {
+                    static_assert(sizeof...(R) > 0);
+                    return get_impl<name, R...>();
+                }
+            }
+
+            template <const_string name, is_state T, typename ...R>
+            static constexpr bool has_impl()
+            {
+                if constexpr (T::name == name)
+                    return true;
+                else if constexpr (sizeof...(R) > 0)
+                    return has_impl<name, R...>();
+                else
+                    return false;
+            }
+
+            template <const_string name, is_state_holder T, typename ...R>
+            static constexpr bool has_impl()
+            {
+                if constexpr (T::template has<name>())
+                    return true;
+                
+                if constexpr (sizeof...(R) > 0)
+                    return has_impl<name, R...>();
+                else
+                    return false;
+            }
+        };
     }
 
     template <typename... S>
     class StateHolder
     {
     public:
-        template <const_string NAME>
+        template <const_string name>
         auto get() const
         {
-            return m_base.template getConstHolder<NAME>().value;
+            return m_base.template getConstHolder<name>().value;
         }
 
-        template <const_string NAME>
+        template <const_string name>
         void set(auto value)
         {
-            m_base.template getHolder<NAME>().value = value;
+            m_base.template getHolder<name>().value = value;
+        }
+
+        template <const_string name>
+        constexpr bool has() const
+        {
+            return false;
         }
 
         u64 serializeState() const
         {
             u64 output = 0;
 
-            NITH_UNUSED bool dont_care_me;
+            bool dont_care_me = 0;
             (dont_care_me = ... = (serializeOne<S>(output), 0)); // trick
 
             return output;
@@ -104,13 +233,13 @@ namespace nith
 
     private:
         template <typename T>
-        NITH_INLINE void serializeOne(u64 &output) const
+        void serializeOne(u64 &output) const
         {
             output = (output << T::num_bits) | ((u64)get<T::name>());
         }
 
         template <typename T>
-        NITH_INLINE void deserializeOne(u64 &input)
+        void deserializeOne(u64 &input)
         {
             constexpr u64 mask = ~u64(0) >> (64 - T::num_bits);
             set<T::name>((typename T::type)(input & mask));
@@ -136,35 +265,14 @@ namespace nith
         }
     };
 
-    struct BlockFace
+    enum class BlockFace
     {
-        enum Enum
-        {
-            NORTH,
-            EAST,
-            UP,
-            SOUTH,
-            WEST,
-            DOWN
-        };
-
-        static Enum FromDirection(const ivec3 &dir)
-        {
-            if (dir.z == 1)
-                return NORTH;
-            if (dir.z == -1)
-                return SOUTH;
-            if (dir.y == 1)
-                return UP;
-            if (dir.y == -1)
-                return DOWN;
-            if (dir.x == 1)
-                return EAST;
-            if (dir.x == -1)
-                return WEST;
-
-            return NORTH;
-        }
+        EAST,
+        UP,
+        SOUTH,
+        WEST,
+        DOWN,
+        NORTH
     };
 
     class Chunk;
@@ -186,10 +294,19 @@ namespace nith
 
         virtual u32 serializeState() const { return 0; };
 
-        virtual void deserializeState(const u32 &state){};
+        virtual void deserializeState(const u32 &){};
 
-        virtual bool canSeeThrough(const BlockFace::Enum &face) { return false; };
+        virtual bool canSeeThrough(const BlockFace &) const { return false; };
+
+        virtual uvec3 getColor() const { return {0, 0, 0}; }
+
+        static packed_block Pack(const Block &block);
+
         static IBlock Unpack(const packed_block &data);
+        
+        static BlockFace GetFaceFromDirection(const ivec3& dir);
+
+        static BlockFace GetOppositeFace(const BlockFace& face);
 
     private:
         BlockMaterial m_material;

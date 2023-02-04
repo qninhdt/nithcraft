@@ -1,7 +1,9 @@
-#include "client/graphic/mesh.hpp"
+#include "graphic/mesh.hpp"
 
 namespace nith
 {
+    GLuint Mesh::s_globalIBO = 0;
+
     Mesh::Mesh(const bool &useGlobalIBO)
         : m_drawCount(0),
           m_maxBufferSize(0),
@@ -18,6 +20,10 @@ namespace nith
         {
             glGenBuffers(1, &m_ibo);
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ibo);
+        }
+        else
+        {
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, s_globalIBO);
         }
     }
 
@@ -55,6 +61,8 @@ namespace nith
 
     void Mesh::setAttributes(std::initializer_list<MeshAttribute> attributes)
     {
+        glBindVertexArray(m_vao);
+
         u32 index = 0;
         u32 offset = 0;
         u32 stride = 0;
@@ -95,6 +103,8 @@ namespace nith
 
     void Mesh::setIndices(u32 *indices, const u32 &count)
     {
+        glBindVertexArray(m_vao);
+
         if (m_useGlobalIBO)
             return;
 
@@ -174,6 +184,27 @@ namespace nith
             glDeleteBuffers(1, &m_ibo);
 
         glDeleteVertexArrays(1, &m_vao);
+    }
+
+    void Mesh::GenerateGlobalIBo()
+    {
+        glGenBuffers(1, &s_globalIBO);
+
+        constexpr u32 MAX_TRIANGLES = 32 * 32 * 32 * 3;
+
+        std::vector<u32> indices;
+        for (u32 i = 0; i < MAX_TRIANGLES; ++i)
+        {
+            u32 j = i * 6;
+            indices.insert(indices.end(), {
+                j + 0, j + 1, j + 2,
+                j + 3, j + 4, j + 5,
+            });
+        }
+
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, s_globalIBO);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(u32), indices.data(), GL_STATIC_DRAW);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     }
 
 } // namespace nith

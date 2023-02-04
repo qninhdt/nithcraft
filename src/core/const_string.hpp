@@ -11,6 +11,9 @@ namespace nith
             for (unsigned i = 0; i != N; ++i)
                 value[i] = s[i];
         }
+
+        constexpr u32 length() const { return N; }
+
         constexpr operator char const *() const { return value; }
 
         constexpr bool operator==(const const_string &) const = default;

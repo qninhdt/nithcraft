@@ -1,18 +1,19 @@
 #pragma once
 
-#include "client/resources/shader_manager.hpp"
-#include "client/window.hpp"
+#include "resources/shader_manager.hpp"
+#include "window.hpp"
+#include "camera.hpp"
 
 namespace nith
 {
-    class NithClient
+    class Application
     {
     public:
-        static constexpr u32 WINDOW_WIDTH = 800;
-        static constexpr u32 WINDOW_HEIGHT = 600;
+        static constexpr u32 WINDOW_WIDTH = 1600;
+        static constexpr u32 WINDOW_HEIGHT = 1200;
         static constexpr char WINDOW_TITLE[] = "Nithcraft";
 
-        NithClient();
+        Application();
 
         bool initGLFW() const;
 
@@ -30,23 +31,21 @@ namespace nith
             return m_resourceFolderPath;
         }
 
-        NITH_INLINE Window &getMainWindow()
+        Window &getMainWindow()
         {
             return m_mainWindow;
         }
 
-        static NITH_INLINE NithClient &GetClient()
+        static Application &Get()
         {
-            return *s_client;
+            return *s_application;
         }
 
     private:
-        static NithClient *s_client;
+        static Application *s_application;
 
         string m_resourceFolderPath;
-
         Window m_mainWindow;
-
         ShaderManager m_shaderManager;
     };
 

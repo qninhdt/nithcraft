@@ -1,6 +1,6 @@
 #pragma once
 
-#include "client/graphic/shader.hpp"
+#include "graphic/shader.hpp"
 
 namespace nith
 {

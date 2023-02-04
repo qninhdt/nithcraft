@@ -13,6 +13,12 @@ namespace nith
         {
         }
 
+        ~Palette()
+        {
+            if (m_storage)
+                delete m_storage;
+        }
+
         T get(const u32 &index) const
         {
             assert(m_storage != nullptr);

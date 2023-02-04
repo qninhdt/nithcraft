@@ -11,6 +11,7 @@
 #include <filesystem>
 #include <iomanip>
 #include <algorithm>
+#include <array>
 
 // third-party libraries
 #include <robin_hood.h>

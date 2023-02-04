@@ -25,6 +25,8 @@ namespace nith
             return this->get<"type">();
         }
 
+        uvec3 getColor() const { return { 1, 1, 1 }; }
+
         void setType(const DirtType &type)
         {
             return this->set<"type">(type);

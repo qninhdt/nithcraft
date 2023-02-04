@@ -10,30 +10,40 @@ namespace nith::ecs
     class Entity
     {
     public:
-        Entity(S &system) : m_system(system) {}
+        Entity() : m_id(0), m_system(0) {}
 
         entity_id getId() const
         {
             return m_id;
         }
 
-        template <typename A, typename C>
-        NITH_INLINE auto &getComponent()
+        S &getSystem()
         {
-            return m_system.template getComponent<A, C>((D &)*this);
+            return m_system;
         }
 
         template <typename A, typename C>
-        NITH_INLINE auto &getConstComponent() const
+        auto &getComponent()
         {
-            return m_system.template getConstComponent<A, C>((D &)*this);
+            return m_system->template getComponent<A, C>((D &)*this);
+        }
+
+        template <typename A, typename C>
+        auto &getConstComponent() const
+        {
+            return m_system->template getConstComponent<A, C>((D &)*this);
+        }
+
+        bool operator==(const Entity &entity)
+        {
+            return entity.m_id == m_id;
         }
 
     private:
         template <typename SS, typename... T>
         friend class System;
 
-        S &m_system;
+        S *m_system;
         entity_id m_id;
     };
 } // namespace nith::ecs

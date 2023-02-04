@@ -15,7 +15,7 @@ namespace nith::ecs
         struct SystemBase<T, R...>
         {
             template <typename U>
-            NITH_INLINE auto &getArchetype()
+            auto &getArchetype()
             {
                 if constexpr (std::is_same_v<T, U>)
                     return archetype;
@@ -27,7 +27,7 @@ namespace nith::ecs
             }
 
             template <typename U>
-            NITH_INLINE auto &getConstArchetype() const
+            auto &getConstArchetype() const
             {
                 if constexpr (std::is_same_v<T, U>)
                     return archetype;
@@ -48,13 +48,13 @@ namespace nith::ecs
     {
     public:
         template <typename A, typename C, typename E>
-        NITH_INLINE auto &getComponent(const E &entity)
+        auto &getComponent(const E &entity)
         {
             return m_base.template getArchetype<A>().template getComponent<C>(entity.getId());
         }
 
         template <typename A, typename C, typename E>
-        NITH_INLINE auto &getConstComponent(const E &entity) const
+        auto &getConstComponent(const E &entity) const
         {
             return m_base.template getConstArchetype<A>().template getConstComponent<C>(entity.getId());
         }
@@ -62,9 +62,11 @@ namespace nith::ecs
         template <typename E, typename... A>
         E create()
         {
-            E entity(*(S *)this);
+            E entity;
             entity_id &id = ((Entity<E, S> &)entity).m_id;
+            ((Entity<E, S> &)entity).m_system = (S *)this;
             id = m_idStack.pop();
+
             (m_base.template getArchetype<A>().addEntity(id), ...);
             return entity;
         }
@@ -73,8 +75,8 @@ namespace nith::ecs
         void remove(const E &entity)
         {
             entity_id &id = ((Entity<E, S> &)entity).m_id;
-            m_idStack.push(id);
             (m_base.template getArchetype<A>().removeEntity(id), ...);
+            m_idStack.push(id);
         }
 
     private:

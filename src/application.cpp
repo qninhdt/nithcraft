@@ -1,17 +1,17 @@
-#include "client/nith_client.hpp"
+#include "application.hpp"
 
 namespace nith
 {
-    NithClient *NithClient::s_client = nullptr;
+    Application *Application::s_application = nullptr;
 
-    NithClient::NithClient()
-        : m_resourceFolderPath("D:/github/nithcraft/resources/"),
-          m_mainWindow(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE)
+    Application::Application():
+        m_resourceFolderPath("D:/github/nithcraft/resources/"),
+        m_mainWindow(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE)
     {
-        s_client = this;
+        s_application = this;
     }
 
-    bool NithClient::initGLFW() const
+    bool Application::initGLFW() const
     {
         if (!glfwInit())
             return false;
@@ -23,9 +23,10 @@ namespace nith
         return true;
     }
 
-    bool NithClient::initGL() const
+    bool Application::initGL() const
     {
         return gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
     }
+
 
 } // namespace nith
