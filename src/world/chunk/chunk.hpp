@@ -8,14 +8,25 @@
 
 namespace nith
 {
-    static constexpr u32 CHUNK_SIZE = 32;
-    static constexpr u32 CHUNK_VOLUME = CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE;
+    static constexpr i32 CHUNK_SIZE = 32;
+    static constexpr i32 CHUNK_VOLUME = CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE;
       
+    struct BlockVertex
+    {
+        vec3 position;
+        vec2 uv;
+        u32 texId;
+    };
+
     class World;
     struct ChunkData;
 
     struct ChunkPosition : ivec3
     {
+        vec3 toWorldPosition()
+        {
+            return { x * CHUNK_SIZE, y * CHUNK_SIZE, z * CHUNK_SIZE };
+        }
     };
 
     struct ChunkRenderer
@@ -38,8 +49,7 @@ namespace nith
     class Chunk : public ecs::Entity<Chunk, ChunkSystem>
     {
     public:
-        ivec3 getPosition() const;
-        ivec3 getWorldPosition() const;
+        ChunkPosition& getPosition();
 
         packed_block getPackedBlock(const uvec3& pos) const;
         IBlock getBlock(const uvec3& pos) const;
@@ -54,7 +64,7 @@ namespace nith
 
     private:
         static array<tuple<ivec3, BlockFace>, 6> Directions;
-        static array<array<vec3, 2 * 3>, 6> BlockVertices;
+        static array<array<tuple<vec3, vec2>, 2 * 3>, 6> BlockVertices;
         static u32 BlockPosToIndex(const uvec3& pos);
 
         IBlock getBlockOptimally(const ivec3& pos);

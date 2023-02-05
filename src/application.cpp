@@ -16,6 +16,7 @@ namespace nith
         if (!glfwInit())
             return false;
 
+        //glfwWindowHint(GLFW_SAMPLES, 4);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -26,6 +27,12 @@ namespace nith
     bool Application::initGL() const
     {
         return gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
+    }
+
+    void Application::loadResources()
+    {
+        m_blockTextureManager.load();
+        m_shaderManager.loadShaders();
     }
 
 

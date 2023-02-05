@@ -4,9 +4,13 @@
 
 namespace nith
 {
+    using BasicShader = Shader<"mvp">;
+
     class ShaderManager
     {
     public:
+        void loadShaders();
+
         void loadShaderFromFile(const string &vertexPath, const string &fragmentPath);
 
         void reloadShader(const string &name);

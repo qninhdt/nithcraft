@@ -5,31 +5,16 @@
 
 namespace nith
 {
-    enum class DirtType
-    {
-        SOIL,
-        BASALT
-    };
-
-    class DirtBlock
-        : public StatefulBlock<
-              block::state<DirtType, "type", 1>>
+    class DirtBlock : public StatefulBlock<>
     {
     public:
         DirtBlock() : StatefulBlock(BlockMaterial::DIRT)
         {
         }
 
-        DirtType getType() const
+        u32 getTextureId(const BlockFace& face) const
         {
-            return this->get<"type">();
-        }
-
-        uvec3 getColor() const { return { 1, 1, 1 }; }
-
-        void setType(const DirtType &type)
-        {
-            return this->set<"type">(type);
+            return 3;
         }
     };
 } // namespace nith

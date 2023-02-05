@@ -6,6 +6,7 @@ namespace nith
     {
         AIR = 0,
         DIRT,
+        GRASS,
         STONE,
         SAND
     };

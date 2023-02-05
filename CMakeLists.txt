@@ -25,6 +25,9 @@ target_precompile_headers(${MAIN} PUBLIC src/nithpch.hpp)
 add_subdirectory(third_party/glad)
 target_link_libraries(${MAIN} PUBLIC glad)
 
+add_subdirectory(third_party/stb_image)
+target_link_libraries(${MAIN} PUBLIC stb_image)
+
 find_package(robin_hood CONFIG REQUIRED)
 target_link_libraries(${MAIN} PUBLIC robin_hood::robin_hood)
 

@@ -11,10 +11,9 @@
 #include "game.hpp"
 #include "core/ecs/system.hpp"
 #include "debug_layer.hpp"
+#include "stb_image.h"
 
 using namespace nith;
-
-using BasicShader = Shader<"projection_view">;
 
 int main()
 {
@@ -23,21 +22,24 @@ int main()
 
     Window& mainWindow = nithClient.getMainWindow();
     mainWindow.open();
+    mainWindow.toggleCursor();
+
+    nithClient.loadResources();
+
+    //glEnable(GL_MULTISAMPLE);
 
     DebugLayer debugLayer(mainWindow);
     
     Mesh::GenerateGlobalIBO();
-    
+
+    const GLubyte* renderer = glGetString(GL_RENDERER);
+    std::cout << renderer << '\n';
+
     Game game;
     Camera& camera = game.getCamera();
 
     camera.getTransform().setPosition({ 16, 16, -16 });
     camera.updateView();
-
-    shaderManager.loadShaderFromFile("D:/github/nithcraft/resources/shaders/basic.vert",
-                                     "D:/github/nithcraft/resources/shaders/basic.frag");
-
-    BasicShader basicShader = shaderManager.getShader<BasicShader>("basic");
 
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     glEnable(GL_DEPTH_TEST);
@@ -60,9 +62,6 @@ int main()
         game.tick(0);
 
         mainWindow.beginLoop();
-
-        basicShader.setUniform<"projection_view">(camera.getProjectionView());
-        basicShader.use();
 
         game.render(0);
 

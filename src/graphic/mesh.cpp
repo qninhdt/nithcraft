@@ -198,7 +198,7 @@ namespace nith
             u32 j = i * 6;
             indices.insert(indices.end(), {
                 j + 0, j + 1, j + 2,
-                j + 3, j + 4, j + 5,
+                j + 0, j + 2, j + 3,
             });
         }
 

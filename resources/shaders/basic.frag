@@ -1,7 +1,10 @@
 #version 430
 
-in vec3 color;
+in vec2 uv;
+flat in uint tex_id;
+
+uniform sampler2DArray blockTextures;
 
 void main() {
-    gl_FragColor = vec4(color, 1);
+    gl_FragColor = texture(blockTextures, vec3(uv, tex_id));
 }

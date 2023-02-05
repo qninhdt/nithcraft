@@ -1,6 +1,7 @@
 #pragma once
 
 #include "resources/shader_manager.hpp"
+#include "resources/block_texture_manager.hpp"
 #include "window.hpp"
 #include "camera.hpp"
 
@@ -21,9 +22,16 @@ namespace nith
 
         bool openMainWindow();
 
+        void loadResources();
+
         ShaderManager &getShaderManager()
         {
             return m_shaderManager;
+        }
+
+        BlockTextureManager& getBlockTextureManager()
+        {
+            return m_blockTextureManager;
         }
 
         string getFolderPath() const
@@ -47,6 +55,8 @@ namespace nith
         string m_resourceFolderPath;
         Window m_mainWindow;
         ShaderManager m_shaderManager;
+        BlockTextureManager m_blockTextureManager;
+
     };
 
 } // namespace nith

@@ -298,6 +298,8 @@ namespace nith
 
         virtual bool canSeeThrough(const BlockFace &) const { return false; };
 
+        virtual u32 getTextureId(const BlockFace&) const { return 0; };
+
         virtual uvec3 getColor() const { return {0, 0, 0}; }
 
         static packed_block Pack(const Block &block);

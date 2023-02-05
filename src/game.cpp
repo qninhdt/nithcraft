@@ -27,6 +27,13 @@ namespace nith
     {
         s_game = this;
         m_world.loadChunk({ 0, 0, 0 });
+        m_world.loadChunk({ 1, 0, 0 });
+        m_world.loadChunk({ -1, 0, 0 });
+        //m_world.loadChunk({ 0, 1, 0 });
+        //m_world.loadChunk({ 0, -1, 0 });
+        //m_world.loadChunk({ 0, 0, 1 });
+        //m_world.loadChunk({ 0, 0, -1 });
+
     }
 
     Camera& Game::getCamera()

@@ -1,12 +1,15 @@
 #pragma once
 
 #include "world/chunk/chunk.hpp"
+#include "resources/shader_manager.hpp"
 
 namespace nith
 {
     class World
     {
     public:
+        World();
+
         Chunk getChunk(const ivec3 &position);
         Chunk loadChunk(const ivec3 &position);
         void unloadChunk(const ivec3 &position);
@@ -25,6 +28,7 @@ namespace nith
         static ivec3 BlockPosToChunkPos(const ivec3 &pos);
         static uvec3 WorldPosToLocalPos(const ivec3 &pos);
 
+        BasicShader m_chunkShader;
         ChunkSystem m_chunkSystem;
         umap<ivec3, Chunk> m_chunkMap;
     };

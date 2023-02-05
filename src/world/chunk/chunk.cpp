@@ -15,60 +15,50 @@ namespace nith
         { { 0, 0, -1 }, BlockFace::NORTH },
     } };
 
-    array<array<vec3, 2 * 3>, 6> Chunk::BlockVertices = { {
+    array<array<tuple<vec3, vec2>, 2 * 3>, 6> Chunk::BlockVertices = { {
         // Right face
         {{
-            { +0.5f, +0.5f, +0.5f },  // top-left
-            { +0.5f, +0.5f, -0.5f },  // top-right      
-            { +0.5f, -0.5f, -0.5f },  // bottom-right          
-            { +0.5f, -0.5f, -0.5f },  // bottom-right
-            { +0.5f, -0.5f, +0.5f },  // bottom-left
-            { +0.5f, +0.5f, +0.5f }   // top-left
+            { { +0.5f, -0.5f, +0.5f }, { 0, 0 } },  // top-left
+            { { +0.5f, +0.5f, +0.5f }, { 0, 1 } },  // top-right      
+            { { +0.5f, +0.5f, -0.5f }, { 1, 1 } },  // bottom-right          
+            { { +0.5f, -0.5f, -0.5f }, { 1, 0 } },  // bottom-left
         }},
         // Top face
         {{
-            { -0.5f, +0.5f, -0.5f },  // top-left
-            { +0.5f, +0.5f, -0.5f },  // top-right
-            { +0.5f, +0.5f, +0.5f },  // bottom-right                 
-            { +0.5f, +0.5f, +0.5f },  // bottom-right
-            { -0.5f, +0.5f, +0.5f },  // bottom-left  
-            { -0.5f, +0.5f, -0.5f }   // top-left   
+            { { -0.5f, +0.5f, +0.5f }, { 0, 0 } },  // bottom-right
+            { { -0.5f, +0.5f, -0.5f }, { 0, 1 } },  // bottom-left  
+            { { +0.5f, +0.5f, -0.5f }, { 1, 1 } },  // top-left    
+            { { +0.5f, +0.5f, +0.5f }, { 1, 0 } },  // top-right
+
         }},
         // Front face
         {{
-            { -0.5f, -0.5f, +0.5f },  // bottom-left
-            { +0.5f, +0.5f, +0.5f },  // top-right
-            { +0.5f, -0.5f, +0.5f },  // bottom-right        
-            { +0.5f, +0.5f, +0.5f },  // top-right
-            { -0.5f, -0.5f, +0.5f },  // bottom-left
-            { -0.5f, +0.5f, +0.5f }   // top-left       
+            { { -0.5f, -0.5f, +0.5f }, { 0, 0 } },  // top-right
+            { { -0.5f, +0.5f, +0.5f }, { 0, 1 } },  // bottom-right        
+            { { +0.5f, +0.5f, +0.5f }, { 1, 1 } },  // bottom-left
+            { { +0.5f, -0.5f, +0.5f }, { 1, 0 } },  // top-left       
         }},
         // Left face
         {{
-            { -0.5f, +0.5f, +0.5f },  // top-right
-            { -0.5f, -0.5f, -0.5f },  // bottom-left
-            { -0.5f, +0.5f, -0.5f },  // top-left       
-            { -0.5f, -0.5f, -0.5f },  // bottom-left
-            { -0.5f, +0.5f, +0.5f },  // top-right
-            { -0.5f, -0.5f, +0.5f }   // bottom-right
+            { { -0.5f, -0.5f, -0.5f }, { 0, 0 } }, // bottom-left
+            { { -0.5f, +0.5f, -0.5f }, { 0, 1 } }, // top-left       
+            { { -0.5f, +0.5f, +0.5f }, { 1, 1 } }, // top-right
+            { { -0.5f, -0.5f, +0.5f }, { 1, 0 } }, // bottom-right
+
         }},
         // Bottom face
         {{
-            { -0.5f, -0.5f, -0.5f },  // top-right
-            { +0.5f, -0.5f, +0.5f },  // bottom-left
-            { +0.5f, -0.5f, -0.5f },  // top-left        
-            { +0.5f, -0.5f, +0.5f },  // bottom-left
-            { -0.5f, -0.5f, -0.5f },  // top-right
-            { -0.5f, -0.5f, +0.5f }   // bottom-right
+            { { -0.5f, -0.5f, -0.5f }, { 0, 0 } }, // bottom-left
+            { { -0.5f, -0.5f, +0.5f }, { 0, 1 } }, // top-left        
+            { { +0.5f, -0.5f, +0.5f }, { 1, 1 } }, // top-right
+            { { +0.5f, -0.5f, -0.5f }, { 1, 0 } }, // bottom-right
         }},
         // Back face
         {{
-            { -0.5f, -0.5f, -0.5f },  // bottom-left
-            { +0.5f, -0.5f, -0.5f },  // bottom-right    
-            { +0.5f, +0.5f, -0.5f },  // top-right              
-            { +0.5f, +0.5f, -0.5f },  // top-right
-            { -0.5f, +0.5f, -0.5f },  // top-left
-            { -0.5f, -0.5f, -0.5f }   // bottom-left          
+            { { +0.5f, -0.5f, -0.5f }, { 0, 0 } }, // bottom-left
+            { { +0.5f, +0.5f, -0.5f }, { 0, 1 } }, // bottom-right    
+            { { -0.5f, +0.5f, -0.5f }, { 1, 1 } }, // top-right              
+            { { -0.5f, -0.5f, -0.5f }, { 1, 0 } }, // top-left      
         }},
     } };
     
@@ -83,19 +73,14 @@ namespace nith
     {
         mesh.setAttributes({
             { Type::VEC3 }, // position
-            { Type::VEC3 }  // color
+            { Type::VEC2 }, // uv
+            { Type::UINT }, // tex_id
         });
     }
 
-    ivec3 Chunk::getPosition() const
+    ChunkPosition& Chunk::getPosition()
     {
         return this->getConstComponent<ChunkArchetype, ChunkPosition>();
-    }
-
-    ivec3 Chunk::getWorldPosition() const
-    {
-        ivec3 pos = getPosition();
-        return { pos.x * CHUNK_SIZE, pos.y * CHUNK_SIZE, pos.z * CHUNK_SIZE };
     }
 
     packed_block Chunk::getPackedBlock(const uvec3& pos) const
@@ -135,9 +120,10 @@ namespace nith
         auto& renderer = this->getComponent<ChunkArchetype, ChunkRenderer>();
         auto& mesh = renderer.mesh;
 
-        vector<float> vertices;
+        vector<BlockVertex> vertices;
 
         u32 drawCount = 0;
+        vec3 origin = { CHUNK_SIZE / 2, CHUNK_SIZE / 2, CHUNK_SIZE / 2 };
         for (u32 x = 0; x < CHUNK_SIZE; ++x)
             for (u32 y = 0; y < CHUNK_SIZE; ++y)
                 for (u32 z = 0; z < CHUNK_SIZE; ++z)
@@ -157,18 +143,13 @@ namespace nith
                             || neighborBlock->canSeeThrough(Block::GetOppositeFace(face));
 
                         if (!isVisible) continue;
-                        
-                        uvec3 vertColor = { x * 4 + 64, y * 4 + 64, z * 4 + 64 };
-
-                        for (auto& vertPos : BlockVertices[u32(face)])
+  
+                        u32 texId = block->getTextureId(face);
+                        for (auto& [vertPos, vertUv] : BlockVertices[u32(face)])
                         {
-                            vertices.insert(vertices.end(), {
-                                vertPos.x + x,
-                                vertPos.y + y,
-                                vertPos.z + z,
-                                vertColor.x / 255.0f,
-                                vertColor.y / 255.0f,
-                                vertColor.z / 255.0f
+                            vertices.push_back({
+                                vertPos + vec3(pos) - origin,
+                                vertUv, texId
                             });
                         }
 
@@ -184,7 +165,8 @@ namespace nith
         bool isInside = pos.x >= 0 && pos.x < CHUNK_SIZE
             && pos.y >= 0 && pos.y < CHUNK_SIZE
             && pos.z >= 0 && pos.z < CHUNK_SIZE;
-        return isInside ? getBlock(pos) : getWorld().getBlock(getWorldPosition() + pos);
+        ivec3 chunkPos = getPosition();
+        return isInside ? getBlock(pos) : getWorld().getBlock(ivec3(chunkPos.x * CHUNK_SIZE, chunkPos.y * CHUNK_SIZE, chunkPos.z * CHUNK_SIZE) + pos);
     }
 
     u32 Chunk::BlockPosToIndex(const uvec3& pos)

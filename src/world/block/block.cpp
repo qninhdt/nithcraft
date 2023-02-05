@@ -1,6 +1,7 @@
 #include "world/block/block.hpp"
 #include "world/block/nature/air_block.hpp"
 #include "world/block/nature/dirt_block.hpp"
+#include "world/block/nature/grass_block.hpp"
 
 namespace nith
 {
@@ -23,6 +24,8 @@ namespace nith
                 return new AirBlock();
             case BlockMaterial::DIRT:
                 return new DirtBlock();
+            case BlockMaterial::GRASS:
+                return new GrassBlock();
             default:
                 return nullptr;
             }

@@ -70,6 +70,14 @@ namespace nith
         return programId;
     }
 
+    void ShaderManager::loadShaders()
+    {
+        loadShaderFromFile(
+            "D:/github/nithcraft/resources/shaders/basic.vert",
+            "D:/github/nithcraft/resources/shaders/basic.frag"
+        );
+    }
+
     void ShaderManager::loadShaderFromFile(const string &vertexPath, const string &fragmentPath)
     {
         string vertexSource;

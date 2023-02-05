@@ -1,8 +1,16 @@
 #include "world/world.hpp"
 #include "world/block/nature/dirt_block.hpp"
+#include "world/block/nature/grass_block.hpp"
+#include "application.hpp"
+#include "game.hpp"
 
 namespace nith
 {
+    World::World()
+    {
+        m_chunkShader = Application::Get().getShaderManager().getShader<BasicShader>("basic");
+    }
+
     Chunk World::getChunk(const ivec3 &pos)
     {
         auto it = m_chunkMap.find(pos);
@@ -23,9 +31,14 @@ namespace nith
         for (u32 x = 0; x < CHUNK_SIZE; ++x)
             for (u32 z = 0; z < CHUNK_SIZE; ++z)
             {
-                u32 height = (x + z) / 2;
-                for (u32 y = 0; y < height; ++y)
-                    chunk.setBlock({ x, y, z }, Block::Pack(DirtBlock{}));
+                u32 height = sqrt((x * x + z * z)/2);
+
+                if (height >= 1)
+                {
+                    for (u32 y = 0; y < height - 1; ++y)
+                        chunk.setBlock({ x, y, z }, Block::Pack(DirtBlock{}));
+                    chunk.setBlock({ x, height - 1, z }, Block::Pack(GrassBlock{}));
+                }
             }
 
         chunk.generateMesh();
@@ -88,9 +101,22 @@ namespace nith
 
     void World::render(const f32& deltaTime)
     {
-        m_chunkSystem.each<ChunkArchetype, ChunkRenderer>(
-            [&](ChunkRenderer& renderer)
+        static f32 x = 0;
+        x += 0.001f;
+        auto& app = Application::Get();
+        auto& game = Game::Get();
+
+        app.getBlockTextureManager().use();
+        m_chunkShader.use();
+
+        m_chunkSystem.each<ChunkArchetype, ChunkPosition, ChunkRenderer>(
+            [&](ChunkPosition& position, ChunkRenderer& renderer)
             {
+                vec3 worldPos = position.toWorldPosition();
+                std::cout << worldPos.x << ' ' << worldPos.y << ' ' << worldPos.z << '\n';
+                mat4 model = glm::translate(glm::mat4(1), worldPos);
+                //model = glm::rotate(model, x, vec3(1.0f, 0.0f, 0.0f));
+                m_chunkShader.setUniform<"mvp">(game.getCamera().getProjectionView() * model);
                 renderer.mesh.drawTriangles();
             }
         );

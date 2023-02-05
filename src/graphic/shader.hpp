@@ -56,6 +56,7 @@ namespace nith
     class Shader : public internal::ShaderBase<Uniforms...>
     {
     public:
+        Shader() = default;
         Shader(internal::ShaderData *data) : m_data(data){};
 
         template <const_string Name, typename T>
